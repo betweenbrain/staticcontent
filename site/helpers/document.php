@@ -4,6 +4,44 @@ jimport('joomla.log.log');
 abstract class StaticContentHelperDocument
 {
 	private static $_LOG;
+
+
+
+	public function __construct($config = array()) {
+     parent::__construct($config);
+
+     //initialize vars
+     $this->option = JFactory::getApplication()->input->get('option');
+     $this->_comParams = JComponentHelper::getParams($this->option);
+
+     //cache callbacks
+     $this->_cache = JCache::getInstance('callback', array(
+                 'defaultgroup' => $this->option,
+                 'lifetime' => $this->_comParams->get('callback_lifetime', 86400) //1 day duration
+             ));
+     $this->_cache->setCaching(true);
+
+     //cache request
+     $this->_cachePage = JCache::getInstance('output', array(
+                 'defaultgroup' => $this->option,
+                 'lifetime' => $this->_comParams->get('pages_lifetime', 86400) //1 day duration
+             ));
+     $this->_cachePage->setCaching(true);
+
+     //load helpers
+     $this->loadHelper('document');
+     $this->loadHelper('menu');
+     $this->loadHelper('url');
+
+  $this->base_directory = JPath::clean($this->_comParams->get('base_directory'));
+
+  if (substr($this->base_directory, -1) != '/') {
+   $this->base_directory = $this->base_directory . '/';
+  }
+
+  $now                  = date('d-m-Y');
+  $this->base_directory = $this->base_directory . $now . '/';
+ }
 	
 	static public function body($page,$pageLinks,$itemLevel)
 	{
@@ -129,7 +167,14 @@ abstract class StaticContentHelperDocument
 		$option = JFactory::getApplication()->input->get('option');
 		$comParams = JComponentHelper::getParams($option);
 		$path_source = JPath::clean($comParams->get('base_directory'));
-		
+
+		if (substr($path_source, -1) != '/') {
+			$path_source = $path_source . '/';
+		}
+
+		$now                  = date('d-m-Y');
+		$path_source = $path_source . $now;
+
 		if ($node->hasAttribute($attribute)) {
 			$url = $node->getAttribute($attribute);
 			$uri = JFactory::getURI($url);

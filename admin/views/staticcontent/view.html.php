@@ -9,6 +9,13 @@ class StaticContentViewStaticContent extends View
 		$params = JComponentHelper::getParams('com_staticcontent');
 		$base_directory = $params->get('base_directory');
 
+		if (substr($base_directory, -1) != '/') {
+			$base_directory = $base_directory . '/';
+		}
+
+		$now                  = date('d-m-Y');
+		$base_directory = $base_directory . $now;
+
 		$this->sef = JFactory::getConfig()->get('sef',0);
 
 		$this->base_directory = empty($base_directory) ? '' : JPath::clean($base_directory);

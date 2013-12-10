@@ -78,6 +78,15 @@ class StaticContentModelExport extends Model {
         $this->loadHelper('document');
         $this->loadHelper('menu');
         $this->loadHelper('url');
+
+	    $this->base_directory = JPath::clean($this->_comParams->get('base_directory'));
+
+	    if (substr($this->base_directory, -1) != '/') {
+		    $this->base_directory = $this->base_directory . '/';
+	    }
+
+	    $now                  = date('d-m-Y');
+	    $this->base_directory = $this->base_directory . $now . '/';
     }
 
     /**
@@ -247,12 +256,11 @@ class StaticContentModelExport extends Model {
      * @return booelan true if success
      */
     private function _writePages() {
-        $base_directory = JPath::clean($this->_comParams->get('base_directory'));
 
         //create base folder if not exists
-        if (!JFolder::exists($base_directory)) {
-            if (!JFolder::create($base_directory))
-                die(JText::sprintf('COM_STATICCONTENT_MSG_FAILURE_CREATE_BASE_DIRECTORY', $base_directory));
+        if (!JFolder::exists($this->base_directory)) {
+            if (!JFolder::create($this->base_directory))
+                die(JText::sprintf('COM_STATICCONTENT_MSG_FAILURE_CREATE_BASE_DIRECTORY', $this->base_directory));
         }
 
         //write menus pages
@@ -273,10 +281,9 @@ class StaticContentModelExport extends Model {
     }
 
     private function _writePage($page) {
-        $basePath = JPath::clean($this->_comParams->get('base_directory') . DIRECTORY_SEPARATOR);
 
-        $fileDirectoryPath = JPath::clean(dirname($basePath . $page->file));
-        $filePath = JPath::clean($basePath . $page->file);
+        $fileDirectoryPath = JPath::clean(dirname($this->base_directory . $page->file));
+        $filePath = JPath::clean($this->base_directory . $page->file);
 
         //distant level form root index
         $itemLevel = count(explode('/', $page->file)) - 1;
